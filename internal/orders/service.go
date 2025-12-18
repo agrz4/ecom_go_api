@@ -44,7 +44,7 @@ func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo
 	qtx := s.repo.WithTx(tx)
 
 	// create an order
-	order, err := qtx.createOrder(ctx, tempOrder.CustomerID)
+	order, err := qtx.CreateOrder(ctx, tempOrder.CustomerID)
 	if err != nil {
 		return repo.Order{}, err
 	}

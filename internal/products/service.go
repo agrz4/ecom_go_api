@@ -13,7 +13,7 @@ type svc struct {
 	repo repo.Querier
 }
 
-type NewService(repo repo.Querier) Service {
+func NewService(repo repo.Querier) Service {
 	return &svc{repo: repo}
 }
 
