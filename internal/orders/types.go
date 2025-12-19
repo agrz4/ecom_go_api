@@ -2,7 +2,7 @@ package orders
 
 import (
 	"context"
-	repo "ecom_go_api/internal/adapters/postgresql/sqlc"
+	"ecom_go_api/internal/models"
 )
 
 type orderItem struct {
@@ -16,5 +16,5 @@ type createOrderParams struct {
 }
 
 type Service interface {
-	PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo.Order, error)
+	PlaceOrder(ctx context.Context, tempOrder createOrderParams) (models.Order, error)
 }

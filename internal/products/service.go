@@ -2,21 +2,27 @@ package products
 
 import (
 	"context"
-	repo "ecom_go_api/internal/adapters/postgresql/sqlc"
+	"ecom_go_api/internal/models"
+
+	"gorm.io/gorm"
 )
 
 type Service interface {
-	ListProducts(ctx context.Context) ([]repo.Product, error)
+	ListProducts(ctx context.Context) ([]models.Product, error)
 }
 
 type svc struct {
-	repo repo.Querier
+	db *gorm.DB
 }
 
-func NewService(repo repo.Querier) Service {
-	return &svc{repo: repo}
+func NewService(db *gorm.DB) Service {
+	return &svc{db: db}
 }
 
-func (s *svc) ListProducts(ctx context.Context) ([]repo.Product, error) {
-	return s.repo.ListProducts(ctx)
+func (s *svc) ListProducts(ctx context.Context) ([]models.Product, error) {
+	var products []models.Product
+	if err := s.db.WithContext(ctx).Find(&products).Error; err != nil {
+		return nil, err
+	}
+	return products, nil
 }

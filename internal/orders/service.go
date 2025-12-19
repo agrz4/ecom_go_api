@@ -2,11 +2,11 @@ package orders
 
 import (
 	"context"
-	repo "ecom_go_api/internal/adapters/postgresql/sqlc"
+	"ecom_go_api/internal/models"
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"gorm.io/gorm"
 )
 
 var (
@@ -15,65 +15,65 @@ var (
 )
 
 type svc struct {
-	repo *repo.Queries
-	db   *pgx.Conn
+	db *gorm.DB
 }
 
-func NewService(repo *repo.Queries, db *pgx.Conn) Service {
+func NewService(db *gorm.DB) Service {
 	return &svc{
-		repo: repo,
-		db:   db,
+		db: db,
 	}
 }
 
-func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (repo.Order, error) {
+func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (models.Order, error) {
 	// validate payload
 	if tempOrder.CustomerID == 0 {
-		return repo.Order{}, fmt.Errorf("customer ID is required")
+		return models.Order{}, fmt.Errorf("customer ID is required")
 	}
 	if len(tempOrder.Items) == 0 {
-		return repo.Order{}, fmt.Errorf("at least one item is required")
+		return models.Order{}, fmt.Errorf("at least one item is required")
 	}
 
-	tx, err := s.db.Begin(ctx)
+	var order models.Order
+
+	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// create an order
+		order = models.Order{CustomerID: tempOrder.CustomerID}
+		if err := tx.Create(&order).Error; err != nil {
+			return err
+		}
+
+		// look for the product if exist
+		for _, item := range tempOrder.Items {
+			var product models.Product
+			if err := tx.First(&product, item.ProductID).Error; err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return ErrProductNotFound
+				}
+				return err
+			}
+
+			if product.Quantity < item.Quantity {
+				return ErrProductNoStock
+			}
+
+			// create order item
+			orderItem := models.OrderItem{
+				OrderID:    order.ID,
+				ProductID:  item.ProductID,
+				Quantity:   item.Quantity,
+				PriceCents: product.PriceInCenters,
+			}
+			if err := tx.Create(&orderItem).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
 	if err != nil {
-		return repo.Order{}, err
+		return models.Order{}, err
 	}
-	defer tx.Rollback(ctx)
-
-	qtx := s.repo.WithTx(tx)
-
-	// create an order
-	order, err := qtx.CreateOrder(ctx, tempOrder.CustomerID)
-	if err != nil {
-		return repo.Order{}, err
-	}
-
-	// look for the product if exist
-	for _, item := range tempOrder.Items {
-		product, err := qtx.FindProductByID(ctx, item.ProductID)
-		if err != nil {
-			return repo.Order{}, ErrProductNotFound
-		}
-
-		if product.Quantity < item.Quantity {
-			return repo.Order{}, ErrProductNoStock
-		}
-
-		// create order item
-		_, err = qtx.CreateOrderItem(ctx, repo.CreateOrderItemParams{
-			OrderID:    order.ID,
-			ProductID:  item.ProductID,
-			Quantity:   item.Quantity,
-			PriceCents: product.PriceInCenters,
-		})
-		if err != nil {
-			return repo.Order{}, err
-		}
-
-	}
-
-	tx.Commit(ctx)
 
 	return order, nil
 }
