@@ -9,6 +9,9 @@ import (
 
 type Service interface {
 	ListProducts(ctx context.Context) ([]models.Product, error)
+	CreateProduct(ctx context.Context, product *models.Product) error
+	UpdateProduct(ctx context.Context, id int64, product *models.Product) error
+	DeleteProduct(ctx context.Context, id int64) error
 }
 
 type svc struct {
@@ -25,4 +28,16 @@ func (s *svc) ListProducts(ctx context.Context) ([]models.Product, error) {
 		return nil, err
 	}
 	return products, nil
+}
+
+func (s *svc) CreateProduct(ctx context.Context, product *models.Product) error {
+	return s.db.WithContext(ctx).Create(product).Error
+}
+
+func (s *svc) UpdateProduct(ctx context.Context, id int64, product *models.Product) error {
+	return s.db.WithContext(ctx).Model(&models.Product{}).Where("id = ?", id).Updates(product).Error
+}
+
+func (s *svc) DeleteProduct(ctx context.Context, id int64) error {
+	return s.db.WithContext(ctx).Delete(&models.Product{}, id).Error
 }

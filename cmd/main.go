@@ -48,6 +48,9 @@ func main() {
 
 	r.Route("/products", func(r chi.Router) {
 		r.Get("/", productHandler.ListProducts)
+		r.Post("/", productHandler.CreateProduct)
+		r.Put("/{id}", productHandler.UpdateProduct)
+		r.Delete("/{id}", productHandler.DeleteProduct)
 	})
 
 	r.Route("/orders", func(r chi.Router) {
