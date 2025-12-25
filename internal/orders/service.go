@@ -77,3 +77,15 @@ func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (mode
 
 	return order, nil
 }
+
+func (s *svc) GetOrder(ctx context.Context, id int64) (models.Order, error) {
+	var order models.Order
+	// Preload Items to include OrderItems in response
+	if err := s.db.WithContext(ctx).Preload("Items").First(&order, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.Order{}, fmt.Errorf("order not found")
+		}
+		return models.Order{}, err
+	}
+	return order, nil
+}

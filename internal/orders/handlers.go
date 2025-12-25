@@ -4,6 +4,9 @@ import (
 	"ecom_go_api/internal/json"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type handler struct {
@@ -38,4 +41,22 @@ func (h *handler) PlaceOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.Write(w, http.StatusCreated, createOrder)
+}
+
+func (h *handler) GetOrder(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid order ID", http.StatusBadRequest)
+		return
+	}
+
+	order, err := h.service.GetOrder(r.Context(), id)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusNotFound) // Using 404 for simplicity if not found inside service error check
+		return
+	}
+
+	json.Write(w, http.StatusOK, order)
 }

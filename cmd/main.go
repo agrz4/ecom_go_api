@@ -55,6 +55,7 @@ func main() {
 
 	r.Route("/orders", func(r chi.Router) {
 		r.Post("/", orderHandler.PlaceOrder)
+		r.Get("/{id}", orderHandler.GetOrder)
 	})
 
 	log.Println("Server executing on :8080")
