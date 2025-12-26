@@ -60,3 +60,13 @@ func (h *handler) GetOrder(w http.ResponseWriter, r *http.Request) {
 
 	json.Write(w, http.StatusOK, order)
 }
+
+func (h *handler) ListOrders(w http.ResponseWriter, r *http.Request) {
+	orders, err := h.service.ListOrders(r.Context())
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	json.Write(w, http.StatusOK, orders)
+}

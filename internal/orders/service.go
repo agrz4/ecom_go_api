@@ -37,7 +37,10 @@ func (s *svc) PlaceOrder(ctx context.Context, tempOrder createOrderParams) (mode
 
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// create an order
-		order = models.Order{CustomerID: tempOrder.CustomerID}
+		order = models.Order{
+			CustomerID:  tempOrder.CustomerID,
+			Description: tempOrder.Description,
+		}
 		if err := tx.Create(&order).Error; err != nil {
 			return err
 		}
@@ -88,4 +91,13 @@ func (s *svc) GetOrder(ctx context.Context, id int64) (models.Order, error) {
 		return models.Order{}, err
 	}
 	return order, nil
+}
+
+func (s *svc) ListOrders(ctx context.Context) ([]models.Order, error) {
+	var orders []models.Order
+	// Preload Items to include OrderItems in response for all orders
+	if err := s.db.WithContext(ctx).Preload("Items").Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
 }

@@ -11,11 +11,13 @@ type orderItem struct {
 }
 
 type createOrderParams struct {
-	CustomerID int64       `json:"customerId"`
-	Items      []orderItem `json:"items"`
+	CustomerID  int64       `json:"customerId"`
+	Description string      `json:"description"`
+	Items       []orderItem `json:"items"`
 }
 
 type Service interface {
 	PlaceOrder(ctx context.Context, tempOrder createOrderParams) (models.Order, error)
 	GetOrder(ctx context.Context, id int64) (models.Order, error)
+	ListOrders(ctx context.Context) ([]models.Order, error)
 }

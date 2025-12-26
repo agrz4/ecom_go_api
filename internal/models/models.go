@@ -13,10 +13,11 @@ type Product struct {
 }
 
 type Order struct {
-	ID         int64       `gorm:"primaryKey;autoIncrement" json:"id"`
-	CustomerID int64       `gorm:"not null" json:"customer_id"`
-	CreatedAt  time.Time   `gorm:"autoCreateTime" json:"created_at"`
-	Items      []OrderItem `gorm:"foreignKey:OrderID" json:"items"`
+	ID          int64       `gorm:"primaryKey;autoIncrement" json:"id"`
+	CustomerID  int64       `gorm:"not null" json:"customer_id"`
+	Description string      `json:"description"`
+	CreatedAt   time.Time   `gorm:"autoCreateTime" json:"created_at"`
+	Items       []OrderItem `gorm:"foreignKey:OrderID" json:"items"`
 }
 
 type OrderItem struct {
