@@ -8,7 +8,7 @@ import (
 )
 
 type Service interface {
-	ListProducts(ctx context.Context) ([]models.Product, error)
+	ListProducts(ctx context.Context, categoryID string) ([]models.Product, error)
 	CreateProduct(ctx context.Context, product *models.Product) error
 	UpdateProduct(ctx context.Context, id int64, product *models.Product) error
 	DeleteProduct(ctx context.Context, id int64) error
@@ -22,9 +22,13 @@ func NewService(db *gorm.DB) Service {
 	return &svc{db: db}
 }
 
-func (s *svc) ListProducts(ctx context.Context) ([]models.Product, error) {
+func (s *svc) ListProducts(ctx context.Context, categoryID string) ([]models.Product, error) {
 	var products []models.Product
-	if err := s.db.WithContext(ctx).Find(&products).Error; err != nil {
+	query := s.db.WithContext(ctx).Preload("Category")
+	if categoryID != "" {
+		query = query.Where("category_id = ?", categoryID)
+	}
+	if err := query.Find(&products).Error; err != nil {
 		return nil, err
 	}
 	return products, nil

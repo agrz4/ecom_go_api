@@ -21,7 +21,8 @@ func NewHandler(service Service) *handler {
 }
 
 func (h *handler) ListProducts(w http.ResponseWriter, r *http.Request) {
-	products, err := h.service.ListProducts(r.Context())
+	categoryID := r.URL.Query().Get("category_id")
+	products, err := h.service.ListProducts(r.Context(), categoryID)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

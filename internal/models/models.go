@@ -4,11 +4,18 @@ import (
 	"time"
 )
 
+type Category struct {
+	ID   int64  `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name string `gorm:"not null" json:"name"`
+}
+
 type Product struct {
 	ID             int64     `gorm:"primaryKey;autoIncrement" json:"id"`
 	Name           string    `gorm:"not null" json:"name"`
 	PriceInCenters int32     `gorm:"not null" json:"price_in_centers"`
 	Quantity       int32     `gorm:"not null" json:"quantity"`
+	CategoryID     *int64    `json:"category_id"` // Optional foreign key
+	Category       *Category `gorm:"foreignKey:CategoryID" json:"category,omitempty"`
 	CreatedAt      time.Time `gorm:"autoCreateTime" json:"created_at"`
 }
 
