@@ -20,4 +20,6 @@ type Service interface {
 	PlaceOrder(ctx context.Context, tempOrder createOrderParams) (models.Order, error)
 	GetOrder(ctx context.Context, id int64) (models.Order, error)
 	ListOrders(ctx context.Context) ([]models.Order, error)
+	UpdateOrder(ctx context.Context, id int64, order *models.Order) error
+	DeleteOrder(ctx context.Context, id int64) error
 }

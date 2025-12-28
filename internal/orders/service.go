@@ -101,3 +101,11 @@ func (s *svc) ListOrders(ctx context.Context) ([]models.Order, error) {
 	}
 	return orders, nil
 }
+
+func (s *svc) UpdateOrder(ctx context.Context, id int64, order *models.Order) error {
+	return s.db.WithContext(ctx).Model(&models.Order{}).Where("id = ?", id).Updates(order).Error
+}
+
+func (s *svc) DeleteOrder(ctx context.Context, id int64) error {
+	return s.db.WithContext(ctx).Delete(&models.Order{}, id).Error
+}

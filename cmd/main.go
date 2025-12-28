@@ -65,6 +65,8 @@ func main() {
 		r.Post("/", orderHandler.PlaceOrder)
 		r.Get("/{id}", orderHandler.GetOrder)
 		r.Get("/", orderHandler.ListOrders)
+		r.Put("/{id}", orderHandler.UpdateOrder)
+		r.Delete("/{id}", orderHandler.DeleteOrder)
 	})
 
 	log.Println("Server executing on :8080")
